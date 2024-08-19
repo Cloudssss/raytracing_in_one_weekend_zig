@@ -9,10 +9,7 @@ const HittableList = struct {
 
     const Self = @This();
 
-    // TO-DO 之后看看这里的gpa会不会失效
-    pub fn init() Self {
-        var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-        const allocator = gpa.allocator();
+    pub fn init(allocator: std.mem.Allocator) Self {
         return .{
             .objects = ArrayList(Hittable).init(allocator),
         };
