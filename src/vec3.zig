@@ -1,4 +1,5 @@
 const math = @import("std").math;
+const testing = @import("std").testing;
 
 pub const Vec3 = struct {
     e: [3]f64,
@@ -102,3 +103,84 @@ pub const Vec3 = struct {
 };
 
 pub const vec3 = Vec3.new;
+
+const epsilon: f32 = 0.00001;
+test "Vec3.index" {
+    const vec = vec3(12.4, 25.8, 66.7);
+    try testing.expect(vec.x() == vec.e[0]);
+    try testing.expect(vec.y() == vec.e[1]);
+    try testing.expect(vec.z() == vec.e[2]);
+    for (0..3) |i| {
+        try testing.expect(vec.e[i] == vec.at(i));
+    }
+}
+
+test "Vec3.add" {
+    var a = vec3(1.0, 2.0, 3.0);
+    const b = vec3(4.0, 5.0, 6.0);
+
+    try testing.expect(math.approxEqRel(a.add(b).x(), 5.0, epsilon));
+    try testing.expect(math.approxEqRel(a.add(b).y(), 7.0, epsilon));
+    try testing.expect(math.approxEqRel(a.add(b).z(), 9.0, epsilon));
+
+    try testing.expect(math.approxEqRel(a.addAssign(b).x(), 5.0, epsilon));
+    try testing.expect(math.approxEqRel(a.addAssign(b).y(), 7.0, epsilon));
+    try testing.expect(math.approxEqRel(a.addAssign(b).z(), 9.0, epsilon));
+}
+
+test "Vec3.sub" {
+    var a = vec3(1.0, 2.0, 3.0);
+    const b = vec3(4.0, 5.0, 6.0);
+
+    try testing.expect(math.approxEqRel(a.add(b).x(), 3.0, epsilon));
+    try testing.expect(math.approxEqRel(a.add(b).y(), 3.0, epsilon));
+    try testing.expect(math.approxEqRel(a.add(b).z(), 3.0, epsilon));
+
+    try testing.expect(math.approxEqRel(a.addAssign(b).x(), 3.0, epsilon));
+    try testing.expect(math.approxEqRel(a.addAssign(b).y(), 3.0, epsilon));
+    try testing.expect(math.approxEqRel(a.addAssign(b).z(), 3.0, epsilon));
+}
+
+test "Vec3.multiply" {
+    var a = vec3(1.0, 2.0, 3.0);
+    const b = vec3(4.0, 5.0, 6.0);
+
+    try testing.expect(math.approxEqRel(a.multiply(b).x(), 4.0, epsilon));
+    try testing.expect(math.approxEqRel(a.multiply(b).y(), 10.0, epsilon));
+    try testing.expect(math.approxEqRel(a.multiply(b).z(), 18.0, epsilon));
+
+    try testing.expect(math.approxEqRel(a.multiplyNum(3).x(), 3.0, epsilon));
+    try testing.expect(math.approxEqRel(a.multiplyNum(3).y(), 6.0, epsilon));
+    try testing.expect(math.approxEqRel(a.multiplyNum(3).z(), 9.0, epsilon));
+
+    try testing.expect(math.approxEqRel(a.multiplyAssign(b).x(), 4.0, epsilon));
+    try testing.expect(math.approxEqRel(a.multiplyAssign(b).y(), 10.0, epsilon));
+    try testing.expect(math.approxEqRel(a.multiplyAssign(b).z(), 18.0, epsilon));
+}
+
+test "Vec3.dividedBy" {
+    var a = vec3(1.0, 2.0, 3.0);
+
+    try testing.expect(math.approxEqRel(a.dividedByNum(1).x(), 1.0, epsilon));
+    try testing.expect(math.approxEqRel(a.dividedByNum(2).y(), 1.0, epsilon));
+    try testing.expect(math.approxEqRel(a.dividedByNum(3).z(), 1.0, epsilon));
+
+    try testing.expect(math.approxEqRel(a.dividedByAssign(1).x(), 1.0, epsilon));
+    try testing.expect(math.approxEqRel(a.dividedByAssign(2).y(), 1.0, epsilon));
+    try testing.expect(math.approxEqRel(a.dividedByAssign(3).z(), 1.0, epsilon));
+}
+
+test "Vec3.vector" {
+    const lengthVec = vec3(2.0, 1.0, 2.0);
+    const dotVec = vec3(1.0, 2.0, 1.0);
+
+    try testing.expect(math.approxEqRel(lengthVec.length(), 3, epsilon));
+    try testing.expect(math.approxEqRel(lengthVec.dot(dotVec), 6, epsilon));
+
+    try testing.expect(math.approxEqRel(lengthVec.cross(dotVec).x(), -3, epsilon));
+    try testing.expect(math.approxEqRel(lengthVec.cross(dotVec).y(), 0, epsilon));
+    try testing.expect(math.approxEqRel(lengthVec.cross(dotVec).z(), 3, epsilon));
+
+    const unitVec = lengthVec.unitVector();
+    try testing.expect(math.approxEqRel(unitVec.length(), 1, epsilon));
+}
