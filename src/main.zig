@@ -69,13 +69,13 @@ const ImageSize = struct {
 pub fn hitSphere(center: Point3, radius: f64, r: Ray) f64 {
     const oc = r.origin.sub(center);
     const a = r.direction.dot(r.direction);
-    const b = 2.0 * oc.dot(r.direction);
+    const half_b = oc.dot(r.direction);
     const c = oc.dot(oc) - radius * radius;
-    const discriminant = b * b - 4 * a * c;
+    const discriminant = half_b * half_b - a * c;
     if (discriminant < 0) {
         return -1.0;
     } else {
-        return (-b - sqrt(discriminant)) / (2.0 * a);
+        return (-half_b - sqrt(discriminant)) / a;
     }
 }
 
