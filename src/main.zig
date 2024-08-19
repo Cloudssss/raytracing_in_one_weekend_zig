@@ -1,6 +1,10 @@
 const std = @import("std");
 const Vec3 = @import("vec3.zig").Vec3;
+
 const vec3 = @import("vec3.zig").vec3;
+const color = @import("color.zig").color;
+const Color = @import("color.zig").Color;
+const printColor = @import("color.zig").printColor;
 
 pub fn main() !void {
     const image_size = ImageSize{
@@ -15,17 +19,15 @@ pub fn main() !void {
     const bw = buffered.writer();
 
     for (0..image_size.height) |j| {
+        try bw.print("\rScanlines remaining: {d} ", .{image_size.height - j});
+        try buffered.flush();
         for (0..image_size.width) |i| {
-            try bw.print("\rScanlines remaining: {d} ", .{image_size.height - j});
-            try buffered.flush();
-            const r = @as(f32, @floatFromInt(i)) / (image_size.width - 1);
-            const g = @as(f32, @floatFromInt(j)) / (image_size.height - 1);
-            const b: f32 = 0;
-
-            const ir = @as(u32, @intFromFloat(255.99 * r));
-            const ig = @as(u32, @intFromFloat(255.99 * g));
-            const ib = @as(u32, @intFromFloat(255.99 * b));
-            try stdout.print("{d} {d} {d}\n", .{ ir, ig, ib });
+            const pixel_color: Color = color(
+                @as(f64, @floatFromInt(i)) / (image_size.width - 1),
+                @as(f64, @floatFromInt(j)) / (image_size.height - 1),
+                0,
+            );
+            try printColor(pixel_color);
         }
     }
 

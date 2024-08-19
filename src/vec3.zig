@@ -1,5 +1,6 @@
-const math = @import("std").math;
-const testing = @import("std").testing;
+const std = @import("std");
+const math = std.math;
+const testing = std.testing;
 
 pub const Vec3 = struct {
     e: [3]f64,
@@ -94,13 +95,22 @@ pub const Vec3 = struct {
     }
 
     pub fn cross(u: Self, v: Self) Self {
-        return vec3(u.e[1] * v.e[2] - u.e[2] * v.e[1], u.e[2] * v.e[0] - u.e[0] * v.e[2], u.e[0] * v.e[1] - u.e[1] * v.e[0]);
+        return vec3(
+            u.e[1] * v.e[2] - u.e[2] * v.e[1],
+            u.e[2] * v.e[0] - u.e[0] * v.e[2],
+            u.e[0] * v.e[1] - u.e[1] * v.e[0],
+        );
     }
 
     pub fn unitVector(self: Self) Self {
         return self.dividedByNum(self.length());
     }
 };
+
+pub fn printVec(vec: Vec3) !void {
+    const stdout = std.io.getStdOut().writer();
+    try stdout.print("{d} {d} {d}", .{ vec.e[0], vec.e[1], vec.e[2] });
+}
 
 pub const vec3 = Vec3.new;
 
