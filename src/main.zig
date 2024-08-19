@@ -19,6 +19,9 @@ const sphere = @import("sphere.zig").sphere;
 const HitRecord = @import("hittable.zig").HitRecord;
 const HittableList = @import("hittable_list.zig").HittableList;
 
+const Interval = @import("interval.zig").Interval;
+const interval = @import("interval.zig").interval;
+
 const infinity = @import("rtweekend.zig").infinity;
 const pi = @import("rtweekend.zig").pi;
 
@@ -88,7 +91,7 @@ pub fn hitSphere(center: Point3, radius: f64, r: Ray) f64 {
 
 pub fn rayColor(r: Ray, world: HittableList) Color {
     var rec: HitRecord = undefined;
-    if (world.hit(r, 0, infinity, &rec)) {
+    if (world.hit(r, interval(0, infinity), &rec)) {
         return rec.normal.add(color(1, 1, 1)).multiplyNum(0.5);
     }
     const unit_direction = r.direction.unitVector();
