@@ -22,7 +22,7 @@ pub fn build(b: *std.Build) !void {
     const tests = b.addTest(.{
         .target = target,
         .optimize = optimize,
-        .root_source_file = b.path("src/vec3.zig"),
+        .root_source_file = b.path("src/test.zig"),
     });
 
     const test_cmd = b.addRunArtifact(tests);
