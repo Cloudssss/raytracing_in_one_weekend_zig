@@ -37,7 +37,7 @@ pub fn main() !void {
     const viewport_u = vec3(viewport_width, 0, 0);
     const viewport_v = vec3(0, -viewport_height, 0);
     const pixel_delta_u = viewport_u.dividedByNum(image_width);
-    const pixel_delta_v = viewport_v.dividedByNum(@as(f64, @floatFromInt(image_height)));
+    const pixel_delta_v = viewport_v.dividedByNum(@floatFromInt(image_height));
 
     const viewport_upper_left = camera_center.sub(vec3(0, 0, focal_length)).sub(viewport_u.dividedByNum(2)).sub(viewport_v.dividedByNum(2));
     const pixel00_loc = viewport_upper_left.add(pixel_delta_u.add(pixel_delta_v).multiplyNum(0.5));
