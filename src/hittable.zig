@@ -19,4 +19,12 @@ const HitRecord = struct {
     p: Point3,
     normal: Vec3,
     t: f64,
+    front_face: bool,
+
+    const Self = @This();
+
+    pub fn setFaceNormal(self: *Self, r: Ray, outward_normal: Vec3) void {
+        self.front_face = r.direction.dot(outward_normal) < 0;
+        self.normal = if (self.front_face) outward_normal else -outward_normal;
+    }
 };
