@@ -13,16 +13,28 @@ const ray = @import("ray.zig").ray;
 const Point3 = @import("ray.zig").Point3;
 const point3 = @import("ray.zig").point3;
 
+const Hittable = @import("hittable.zig").Hittable;
+const Sphere = @import("sphere.zig").Sphere;
+const sphere = @import("sphere.zig").sphere;
+const HitRecord = @import("hittable.zig").HitRecord;
+const HittableList = @import("hittable_list.zig").HittableList;
+
+const infinity = @import("rtweekend.zig").infinity;
+const pi = @import("rtweekend.zig").pi;
+
 pub fn main() !void {
     const aspect_ration = 16.0 / 9.0;
     const image_width: u32 = 400;
     var image_height: u32 = @as(f64, @floatFromInt(image_width)) / aspect_ration;
     image_height = if (image_height < 1) 1 else image_height;
 
-    const image_size = ImageSize{
-        .width = image_width,
-        .height = image_height,
-    };
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    var world = HittableList.init(allocator);
+    defer world.deinit();
+
+    try world.add(.{ .sphere = sphere(point3(0, 0, -1), 0.5) });
+    try world.add(.{ .sphere = sphere(point3(0, -100.5, -1), 100) });
 
     const focal_length = 1.0;
     const viewport_height = 2.0;
@@ -38,21 +50,21 @@ pub fn main() !void {
     const pixel00_loc = viewport_upper_left.add(pixel_delta_u.add(pixel_delta_v).multiplyNum(0.5));
 
     const stdout = std.io.getStdOut().writer();
-    try stdout.print("P3\n{d} {d}\n255\n", .{ image_size.width, image_size.height });
+    try stdout.print("P3\n{d} {d}\n255\n", .{ image_width, image_height });
 
     var buffered = std.io.bufferedWriter(std.io.getStdErr().writer());
     const bw = buffered.writer();
 
-    for (0..image_size.height) |j| {
-        try bw.print("\rScanlines remaining: {d} ", .{image_size.height - j});
+    for (0..image_height) |j| {
+        try bw.print("\rScanlines remaining: {d} ", .{image_height - j});
         try buffered.flush();
-        for (0..image_size.width) |i| {
+        for (0..image_width) |i| {
             const i_f: f64 = @floatFromInt(i);
             const j_f: f64 = @floatFromInt(j);
             const pixel_center = pixel00_loc.add(pixel_delta_u.multiplyNum(i_f)).add(pixel_delta_v.multiplyNum(j_f));
             const ray_direction = pixel_center.sub(camera_center);
             const r = ray(camera_center, ray_direction);
-            const pixel_color = rayColor(r);
+            const pixel_color = rayColor(r, world);
             try printColor(pixel_color);
         }
     }
@@ -60,11 +72,6 @@ pub fn main() !void {
     try bw.print("\rDone.                 \n", .{});
     try buffered.flush();
 }
-
-const ImageSize = struct {
-    width: u32,
-    height: u32,
-};
 
 pub fn hitSphere(center: Point3, radius: f64, r: Ray) f64 {
     const oc = r.origin.sub(center);
@@ -79,11 +86,10 @@ pub fn hitSphere(center: Point3, radius: f64, r: Ray) f64 {
     }
 }
 
-pub fn rayColor(r: Ray) Color {
-    const t = hitSphere(point3(0, 0, -1), 0.5, r);
-    if (t > 0.0) {
-        const normal = r.at(t).sub(vec3(0, 0, -1)).unitVector();
-        return color(normal.x() + 1, normal.y() + 1, normal.z() + 1).multiplyNum(0.5);
+pub fn rayColor(r: Ray, world: HittableList) Color {
+    var rec: HitRecord = undefined;
+    if (world.hit(r, 0, infinity, &rec)) {
+        return rec.normal.add(color(1, 1, 1)).multiplyNum(0.5);
     }
     const unit_direction = r.direction.unitVector();
     const a = 0.5 * (unit_direction.y() + 1.0);

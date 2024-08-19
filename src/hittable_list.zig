@@ -4,7 +4,7 @@ const Hittable = @import("hittable.zig").Hittable;
 const HitRecord = @import("hittable.zig").HitRecord;
 const ArrayList = @import("std").ArrayList;
 
-const HittableList = struct {
+pub const HittableList = struct {
     objects: ArrayList(Hittable),
 
     const Self = @This();

@@ -13,5 +13,5 @@ pub fn printColor(co: Color) !void {
 }
 
 pub fn color(r: f64, g: f64, b: f64) Color {
-    return Color.new(r, g, b);
+    return Color.init(r, g, b);
 }

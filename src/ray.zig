@@ -22,7 +22,7 @@ pub const Ray = struct {
 };
 
 pub const ray = Ray.init;
-pub const point3 = Point3.new;
+pub const point3 = Point3.init;
 
 test "Ray" {
     const p = point3(1, 1, 1);
