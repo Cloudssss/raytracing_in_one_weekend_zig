@@ -1,4 +1,5 @@
 const std = @import("std");
+const sqrt = std.math.sqrt;
 const Vec3 = @import("vec3.zig").Vec3;
 
 const vec3 = @import("vec3.zig").vec3;
@@ -11,12 +12,6 @@ const Ray = @import("ray.zig").Ray;
 const ray = @import("ray.zig").ray;
 const Point3 = @import("ray.zig").Point3;
 const point3 = @import("ray.zig").point3;
-
-pub fn rayColor(r: Ray) Color {
-    const unit_direction = r.direction.unitVector();
-    const a = 0.5 * (unit_direction.y() + 1.0);
-    return color(1, 1, 1).multiplyNum(1.0 - a).add(color(0.5, 0.7, 1.0).multiplyNum(a));
-}
 
 pub fn main() !void {
     const aspect_ration = 16.0 / 9.0;
@@ -70,3 +65,27 @@ const ImageSize = struct {
     width: u32,
     height: u32,
 };
+
+pub fn hitSphere(center: Point3, radius: f64, r: Ray) f64 {
+    const oc = r.origin.sub(center);
+    const a = r.direction.dot(r.direction);
+    const b = 2.0 * oc.dot(r.direction);
+    const c = oc.dot(oc) - radius * radius;
+    const discriminant = b * b - 4 * a * c;
+    if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (-b - sqrt(discriminant)) / (2.0 * a);
+    }
+}
+
+pub fn rayColor(r: Ray) Color {
+    const t = hitSphere(point3(0, 0, -1), 0.5, r);
+    if (t > 0.0) {
+        const normal = r.at(t).sub(vec3(0, 0, -1)).unitVector();
+        return color(normal.x() + 1, normal.y() + 1, normal.z() + 1).multiplyNum(0.5);
+    }
+    const unit_direction = r.direction.unitVector();
+    const a = 0.5 * (unit_direction.y() + 1.0);
+    return color(1, 1, 1).multiplyNum(1.0 - a).add(color(0.5, 0.7, 1.0).multiplyNum(a));
+}

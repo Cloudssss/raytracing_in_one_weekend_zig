@@ -105,6 +105,13 @@ pub const Vec3 = struct {
     pub fn unitVector(self: Self) Self {
         return self.dividedByNum(self.length());
     }
+
+    pub fn approxEq(a: Self, b: Self) bool {
+        const r1 = math.approxEqRel(f64, a.x(), b.x(), epsilon);
+        const r2 = math.approxEqRel(f64, a.y(), a.y(), epsilon);
+        const r3 = math.approxEqRel(f64, a.z(), b.z(), epsilon);
+        return r1 and r2 and r3;
+    }
 };
 
 pub fn printVec(vec: Vec3) !void {
@@ -129,46 +136,32 @@ test "Vec3.add" {
     var a = vec3(1.0, 2.0, 3.0);
     const b = vec3(4.0, 5.0, 6.0);
 
-    try testing.expect(math.approxEqRel(f64, a.add(b).x(), 5.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.add(b).y(), 7.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.add(b).z(), 9.0, epsilon));
+    try testing.expect(a.add(b).approxEq(vec3(5.0, 7.0, 9.0)));
 
     _ = a.addAssign(b);
-    try testing.expect(math.approxEqRel(f64, a.x(), 5.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.y(), 7.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.z(), 9.0, epsilon));
+    try testing.expect(a.approxEq(vec3(5.0, 7.0, 9.0)));
 }
 
 test "Vec3.sub" {
     var a = vec3(1.0, 2.0, 3.0);
     const b = vec3(4.0, 5.0, 6.0);
 
-    try testing.expect(math.approxEqRel(f64, a.sub(b).x(), -3.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.sub(b).y(), -3.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.sub(b).z(), -3.0, epsilon));
+    try testing.expect(a.sub(b).approxEq(vec3(-3.0, -3.0, -3.0)));
 
     _ = a.subAssign(b);
-    try testing.expect(math.approxEqRel(f64, a.x(), -3.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.y(), -3.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.z(), -3.0, epsilon));
+    try testing.expect(a.approxEq(vec3(-3.0, -3.0, -3.0)));
 }
 
 test "Vec3.multiply" {
     var a = vec3(1.0, 2.0, 3.0);
     const b = vec3(4.0, 5.0, 6.0);
 
-    try testing.expect(math.approxEqRel(f64, a.multiply(b).x(), 4.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.multiply(b).y(), 10.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.multiply(b).z(), 18.0, epsilon));
+    try testing.expect(a.multiply(b).approxEq(vec3(4.0, 10.0, 18.0)));
 
-    try testing.expect(math.approxEqRel(f64, a.multiplyNum(3).x(), 3.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.multiplyNum(3).y(), 6.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.multiplyNum(3).z(), 9.0, epsilon));
+    try testing.expect(a.multiplyNum(3).approxEq(vec3(3.0, 6.0, 9.0)));
 
     _ = a.multiplyAssign(3);
-    try testing.expect(math.approxEqRel(f64, a.x(), 3.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.y(), 6.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.z(), 9.0, epsilon));
+    try testing.expect(a.approxEq(vec3(3.0, 6.0, 9.0)));
 }
 
 test "Vec3.dividedBy" {
@@ -179,9 +172,7 @@ test "Vec3.dividedBy" {
     try testing.expect(math.approxEqRel(f64, a.dividedByNum(3).z(), 1.0, epsilon));
 
     _ = a.dividedByAssign(3);
-    try testing.expect(math.approxEqRel(f64, a.x(), 1.0 / 3.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.y(), 2.0 / 3.0, epsilon));
-    try testing.expect(math.approxEqRel(f64, a.z(), 3.0 / 3.0, epsilon));
+    try testing.expect(a.approxEq(vec3(1.0 / 3.0, 2.0 / 3.0, 3.0 / 3.0)));
 }
 
 test "Vec3.vector" {
@@ -191,9 +182,7 @@ test "Vec3.vector" {
     try testing.expect(math.approxEqRel(f64, lengthVec.length(), 3, epsilon));
     try testing.expect(math.approxEqRel(f64, lengthVec.dot(dotVec), 6, epsilon));
 
-    try testing.expect(math.approxEqRel(f64, lengthVec.cross(dotVec).x(), -3, epsilon));
-    try testing.expect(math.approxEqRel(f64, lengthVec.cross(dotVec).y(), 0, epsilon));
-    try testing.expect(math.approxEqRel(f64, lengthVec.cross(dotVec).z(), 3, epsilon));
+    try testing.expect(lengthVec.cross(dotVec).approxEq(vec3(-3.0, 0.0, 3.0)));
 
     const unitVec = lengthVec.unitVector();
     try testing.expect(math.approxEqRel(f64, unitVec.length(), 1, epsilon));
