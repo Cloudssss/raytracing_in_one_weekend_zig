@@ -1,1 +1,3 @@
 # raytracing_in_one_weekend_zig
+
+用zig写写光线追踪，学习zig与图形学
