@@ -1,14 +1,26 @@
 const std = @import("std");
 const Vec3 = @import("vec3.zig").Vec3;
+const interval = @import("interval.zig").interval;
 
 pub const Color = Vec3;
 
-pub fn printColor(co: Color) !void {
+pub fn printColor(co: Color, samples_per_pixel: i32) !void {
+    var r = co.x();
+    var g = co.y();
+    var b = co.z();
+
+    const scale = 1.0 / samples_per_pixel;
+    r *= scale;
+    g *= scale;
+    b *= scale;
+
+    const intensity = interval(0.000, 0.999);
+
     const stdout = std.io.getStdOut().writer();
     try stdout.print("{d} {d} {d}\n", .{
-        @as(u32, @intFromFloat(co.x() * 255.999)),
-        @as(u32, @intFromFloat(co.y() * 255.999)),
-        @as(u32, @intFromFloat(co.z() * 255.999)),
+        @as(u32, @intFromFloat(intensity.clamp(r) * 256)),
+        @as(u32, @intFromFloat(intensity.clamp(g) * 256)),
+        @as(u32, @intFromFloat(intensity.clamp(b) * 256)),
     });
 }
 
