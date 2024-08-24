@@ -7,13 +7,16 @@ pub fn degreesToRadians(degrees: f64) f64 {
     return degrees * pi / 180.0;
 }
 
-pub fn randomDouble() !f64 {
+pub fn randomDouble() f64 {
     var seed: u64 = undefined;
-    try std.posix.getrandom(std.mem.asBytes(&seed));
+    std.posix.getrandom(std.mem.asBytes(&seed)) catch |err| {
+        std.debug.print("randomDouble has erro:{}", .{err});
+        return 0.5;
+    };
     var prng = std.Random.DefaultPrng.init(seed);
     return prng.random().float(f64);
 }
 
-pub fn randomDoubleRange(min: f64, max: f64) !f64 {
+pub fn randomDoubleRange(min: f64, max: f64) f64 {
     return min + (max - min) * randomDouble();
 }

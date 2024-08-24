@@ -4,12 +4,12 @@ const interval = @import("interval.zig").interval;
 
 pub const Color = Vec3;
 
-pub fn printColor(co: Color, samples_per_pixel: i32) !void {
+pub fn printColor(co: Color, samples_per_pixel: u32) !void {
     var r = co.x();
     var g = co.y();
     var b = co.z();
 
-    const scale = 1.0 / samples_per_pixel;
+    const scale = 1.0 / @as(f64, @floatFromInt(samples_per_pixel));
     r *= scale;
     g *= scale;
     b *= scale;

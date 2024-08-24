@@ -41,22 +41,20 @@ pub const Vec3 = struct {
         return vec3(a.e[0] + b.e[0], a.e[1] + b.e[1], a.e[2] + b.e[2]);
     }
 
-    pub fn addAssign(a: *Self, b: Self) *Self {
+    pub fn addAssign(a: *Self, b: Self) void {
         a.e[0] += b.e[0];
         a.e[1] += b.e[1];
         a.e[2] += b.e[2];
-        return a;
     }
 
     pub fn sub(a: Self, b: Self) Self {
         return vec3(a.e[0] - b.e[0], a.e[1] - b.e[1], a.e[2] - b.e[2]);
     }
 
-    pub fn subAssign(a: *Self, b: Self) *Self {
+    pub fn subAssign(a: *Self, b: Self) void {
         a.e[0] -= b.e[0];
         a.e[1] -= b.e[1];
         a.e[2] -= b.e[2];
-        return a;
     }
 
     pub fn multiply(a: Self, b: Self) Self {
@@ -67,19 +65,18 @@ pub const Vec3 = struct {
         return vec3(a.e[0] * b, a.e[1] * b, a.e[2] * b);
     }
 
-    pub fn multiplyAssign(a: *Self, t: f64) *Self {
+    pub fn multiplyAssign(a: *Self, t: f64) void {
         a.e[0] *= t;
         a.e[1] *= t;
         a.e[2] *= t;
-        return a;
     }
 
     pub fn dividedByNum(a: Self, b: f64) Self {
         return vec3(a.e[0] * (1 / b), a.e[1] * (1 / b), a.e[2] * (1 / b));
     }
 
-    pub fn dividedByAssign(a: *Self, t: f64) *Self {
-        return a.multiplyAssign(1 / t);
+    pub fn dividedByAssign(a: *Self, t: f64) void {
+        a.multiplyAssign(1 / t);
     }
 
     pub fn length(self: Self) f64 {
@@ -138,7 +135,7 @@ test "Vec3.add" {
 
     try testing.expect(a.add(b).approxEq(vec3(5.0, 7.0, 9.0)));
 
-    _ = a.addAssign(b);
+    a.addAssign(b);
     try testing.expect(a.approxEq(vec3(5.0, 7.0, 9.0)));
 }
 
@@ -148,7 +145,7 @@ test "Vec3.sub" {
 
     try testing.expect(a.sub(b).approxEq(vec3(-3.0, -3.0, -3.0)));
 
-    _ = a.subAssign(b);
+    a.subAssign(b);
     try testing.expect(a.approxEq(vec3(-3.0, -3.0, -3.0)));
 }
 
@@ -160,7 +157,7 @@ test "Vec3.multiply" {
 
     try testing.expect(a.multiplyNum(3).approxEq(vec3(3.0, 6.0, 9.0)));
 
-    _ = a.multiplyAssign(3);
+    a.multiplyAssign(3);
     try testing.expect(a.approxEq(vec3(3.0, 6.0, 9.0)));
 }
 
@@ -171,7 +168,7 @@ test "Vec3.dividedBy" {
     try testing.expect(math.approxEqRel(f64, a.dividedByNum(2).y(), 1.0, epsilon));
     try testing.expect(math.approxEqRel(f64, a.dividedByNum(3).z(), 1.0, epsilon));
 
-    _ = a.dividedByAssign(3);
+    a.dividedByAssign(3);
     try testing.expect(a.approxEq(vec3(1.0 / 3.0, 2.0 / 3.0, 3.0 / 3.0)));
 }
 
