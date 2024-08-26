@@ -2,6 +2,9 @@ const std = @import("std");
 const math = std.math;
 const testing = std.testing;
 
+const randomDouble = @import("rtweekend.zig").randomDouble;
+const randomDoubleRange = @import("rtweekend.zig").randomDoubleRange;
+
 pub const Vec3 = struct {
     e: [3]f64,
 
@@ -108,6 +111,35 @@ pub const Vec3 = struct {
         const r2 = math.approxEqRel(f64, a.y(), a.y(), epsilon);
         const r3 = math.approxEqRel(f64, a.z(), b.z(), epsilon);
         return r1 and r2 and r3;
+    }
+
+    pub fn random() Self {
+        return vec3(randomDouble(), randomDouble(), randomDouble());
+    }
+
+    pub fn randomRange(min: f64, max: f64) Self {
+        return vec3(randomDoubleRange(min, max), randomDoubleRange(min, max), randomDoubleRange(min, max));
+    }
+
+    pub fn randomInUnitSphere() Vec3 {
+        while (true) {
+            const p = Vec3.randomRange(-1, 1);
+            if (p.lengthSquared() < 1)
+                return p;
+        }
+    }
+
+    pub fn randomUnitVector() Vec3 {
+        return unitVector(randomInUnitSphere());
+    }
+
+    pub fn randomOnHemisphere(normal: Vec3) Vec3 {
+        const on_unit_sphere = randomUnitVector();
+        if (on_unit_sphere.dot(normal) > 0.0) {
+            return on_unit_sphere;
+        } else {
+            return on_unit_sphere.negative();
+        }
     }
 };
 

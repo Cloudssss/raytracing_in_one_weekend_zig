@@ -97,11 +97,11 @@ pub const Camera = struct {
     }
 
     fn rayColor(self: Self, r: Ray, world: HittableList) Color {
-        _ = self;
         var rec: HitRecord = undefined;
 
         if (world.hit(r, interval(0, infinity), &rec)) {
-            return rec.normal.add(color(1, 1, 1)).multiplyNum(0.5);
+            const direction = Vec3.randomOnHemisphere(rec.normal);
+            return self.rayColor(ray(rec.p, direction), world).multiplyNum(0.5);
         }
 
         const unit_direction = r.direction.unitVector();
