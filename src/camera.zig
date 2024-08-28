@@ -20,6 +20,7 @@ pub const Camera = struct {
     aspect_ratio: f64 = 1.0,
     image_width: u32 = 100,
     samples_per_pixel: u32 = 10,
+    max_depth: u32 = 10,
 
     image_height: u32,
     center: Point3,
@@ -45,9 +46,9 @@ pub const Camera = struct {
                 var pixel_color = color(0, 0, 0);
                 for (0..self.samples_per_pixel) |_| {
                     const r = self.getRay(@intCast(i), @intCast(j));
-                    pixel_color.addAssign(self.rayColor(r, world));
+                    pixel_color.addAssign(self.rayColor(r, self.max_depth, world));
                 }
-                try printColor(pixel_color, self.samples_per_pixel);
+                try printColor(stdout, pixel_color, self.samples_per_pixel);
             }
         }
 
@@ -96,12 +97,15 @@ pub const Camera = struct {
         return self.pixel_delta_u.multiplyNum(px).add(self.pixel_delta_v.multiplyNum(py));
     }
 
-    fn rayColor(self: Self, r: Ray, world: HittableList) Color {
+    fn rayColor(self: Self, r: Ray, depth: u32, world: HittableList) Color {
         var rec: HitRecord = undefined;
 
-        if (world.hit(r, interval(0, infinity), &rec)) {
-            const direction = Vec3.randomOnHemisphere(rec.normal);
-            return self.rayColor(ray(rec.p, direction), world).multiplyNum(0.5);
+        if (depth <= 0)
+            return color(0, 0, 0);
+
+        if (world.hit(r, interval(0.001, infinity), &rec)) {
+            const direction = rec.normal.add(Vec3.randomUnitVector());
+            return self.rayColor(ray(rec.p, direction), depth - 1, world).multiplyNum(0.5);
         }
 
         const unit_direction = r.direction.unitVector();

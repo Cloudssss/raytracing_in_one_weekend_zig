@@ -6,7 +6,6 @@ const vec3 = @import("vec3.zig").vec3;
 
 const Color = @import("color.zig").Color;
 const color = @import("color.zig").color;
-const printColor = @import("color.zig").printColor;
 
 const Ray = @import("ray.zig").Ray;
 const ray = @import("ray.zig").ray;
@@ -40,5 +39,6 @@ pub fn main() !void {
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 400;
     cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
     try cam.render(world);
 }
