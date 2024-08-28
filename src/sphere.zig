@@ -3,17 +3,20 @@ const Ray = @import("ray.zig").Ray;
 const Vec3 = @import("vec3.zig").Vec3;
 const HitRecord = @import("hittable.zig").HitRecord;
 const Interval = @import("interval.zig").Interval;
+const Material = @import("material.zig").Material;
 const sqrt = @import("std").math.sqrt;
 
 pub const Sphere = struct {
     center: Point3,
     radius: f64,
+    mat: *Material,
 
     const Self = @This();
-    pub fn init(p: Point3, r: f64) Self {
+    pub fn init(p: Point3, r: f64, m: *Material) Self {
         return .{
             .center = p,
             .radius = r,
+            .mat = m,
         };
     }
 
@@ -38,6 +41,7 @@ pub const Sphere = struct {
         rec.p = r.at(rec.t);
         const outward_normal = rec.p.sub(self.center).dividedByNum(self.radius);
         rec.setFaceNormal(r, outward_normal);
+        rec.mat = self.mat;
 
         return true;
     }
