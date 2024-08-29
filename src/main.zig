@@ -23,6 +23,10 @@ const interval = @import("interval.zig").interval;
 
 const Camera = @import("camera.zig").Camera;
 
+const Material = @import("material.zig").Material;
+const Lambertian = @import("material.zig").Lambertian;
+const Metal = @import("material.zig").Metal;
+
 const infinity = @import("rtweekend.zig").infinity;
 const pi = @import("rtweekend.zig").pi;
 
@@ -30,10 +34,17 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
     var world = HittableList.init(allocator);
-    defer world.deinit();
 
-    try world.add(.{ .sphere = sphere(point3(0, 0, -1), 0.5) });
-    try world.add(.{ .sphere = sphere(point3(0, -100.5, -1), 100) });
+    const material_ground = Material{ .lambertian = Lambertian.init(color(0.8, 0.8, 0.0)) };
+    const material_center = Material{ .lambertian = Lambertian.init(color(0.1, 0.2, 0.5)) };
+    const material_left = Material{ .metal = Metal.init(color(0.8, 0.8, 0.8), 0.3) };
+    const material_right = Material{ .metal = Metal.init(color(0.8, 0.6, 0.2), 1.0) };
+
+    try world.add(.{ .sphere = sphere(point3(0, -100.5, -1), 100, &material_ground) });
+    try world.add(.{ .sphere = sphere(point3(0, 0, -1), 0.5, &material_center) });
+    try world.add(.{ .sphere = sphere(point3(-1, 0, -1), 0.5, &material_left) });
+    try world.add(.{ .sphere = sphere(point3(1, 0, -1), 0.5, &material_right) });
+    defer world.deinit();
 
     var cam = Camera.init();
     cam.aspect_ratio = 16.0 / 9.0;

@@ -9,10 +9,10 @@ const sqrt = @import("std").math.sqrt;
 pub const Sphere = struct {
     center: Point3,
     radius: f64,
-    mat: *Material,
+    mat: *const Material,
 
     const Self = @This();
-    pub fn init(p: Point3, r: f64, m: *Material) Self {
+    pub fn init(p: Point3, r: f64, m: *const Material) Self {
         return .{
             .center = p,
             .radius = r,

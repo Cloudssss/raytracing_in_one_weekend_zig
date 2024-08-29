@@ -20,7 +20,7 @@ pub const Hittable = union(enum) {
 pub const HitRecord = struct {
     p: Point3,
     normal: Vec3,
-    mat: *Material,
+    mat: *const Material,
     t: f64,
     front_face: bool,
 

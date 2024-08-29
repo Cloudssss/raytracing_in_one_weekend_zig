@@ -104,8 +104,11 @@ pub const Camera = struct {
             return color(0, 0, 0);
 
         if (world.hit(r, interval(0.001, infinity), &rec)) {
-            const direction = rec.normal.add(Vec3.randomUnitVector());
-            return self.rayColor(ray(rec.p, direction), depth - 1, world).multiplyNum(0.5);
+            var scattered: Ray = undefined;
+            var attenuation: Color = undefined;
+            if (rec.mat.scatter(r, rec, &attenuation, &scattered))
+                return attenuation.multiply(self.rayColor(scattered, depth - 1, world));
+            return color(0, 0, 0);
         }
 
         const unit_direction = r.direction.unitVector();

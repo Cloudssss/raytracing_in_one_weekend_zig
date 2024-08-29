@@ -141,6 +141,17 @@ pub const Vec3 = struct {
             return on_unit_sphere.negative();
         }
     }
+
+    pub fn reflect(v: Vec3, n: Vec3) Vec3 {
+        return v.sub(n.multiplyNum(v.dot(n) * 2));
+    }
+
+    pub fn nearZero(self: Self) bool {
+        const s = 1e-8;
+        return math.approxEqAbs(f64, self.e[0], 0, s) and
+            math.approxEqAbs(f64, self.e[1], 0, s) and
+            math.approxEqAbs(f64, self.e[2], 0, s);
+    }
 };
 
 pub fn printVec(vec: Vec3) !void {
