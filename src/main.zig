@@ -39,11 +39,13 @@ pub fn main() !void {
     const material_ground = Material{ .lambertian = Lambertian.init(color(0.8, 0.8, 0.0)) };
     const material_center = Material{ .lambertian = Lambertian.init(color(0.1, 0.2, 0.5)) };
     const material_left = Material{ .dielectric = Dielectric.init(1.5) };
+    const material_bubble = Material{ .dielectric = Dielectric.init(1.0 / 1.5) };
     const material_right = Material{ .metal = Metal.init(color(0.8, 0.6, 0.2), 1.0) };
 
     try world.add(.{ .sphere = sphere(point3(0, -100.5, -1), 100, &material_ground) });
     try world.add(.{ .sphere = sphere(point3(0, 0, -1.2), 0.5, &material_center) });
     try world.add(.{ .sphere = sphere(point3(-1, 0, -1), 0.5, &material_left) });
+    try world.add(.{ .sphere = sphere(point3(-1.0, 0.0, -1.0), 0.4, &material_bubble) });
     try world.add(.{ .sphere = sphere(point3(1, 0, -1), 0.5, &material_right) });
     defer world.deinit();
 

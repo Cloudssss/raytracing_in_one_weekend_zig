@@ -4,6 +4,10 @@ const HitRecord = @import("hittable.zig").HitRecord;
 const Color = @import("color.zig").Color;
 const color = @import("color.zig").color;
 const Vec3 = @import("vec3.zig").Vec3;
+const fmin = @import("rtweekend.zig").fmin;
+const fabs = @import("rtweekend.zig").fabs;
+const math = @import("std").math;
+const randomDouble = @import("rtweekend.zig").randomDouble;
 
 pub const Material = union(enum) {
     lambertian: Lambertian,
@@ -73,12 +77,30 @@ pub const Dielectric = struct {
         };
     }
 
+    fn reflectance(cosine: f64, refraction_index: f64) f64 {
+        const r0 = (1 - refraction_index) / (1 + refraction_index);
+        const r = r0 * r0;
+        return r + (1 - r) * math.pow(f64, 1 - cosine, 5);
+    }
+
     pub fn scatter(self: Self, r_in: Ray, rec: HitRecord, attenuation: *Color, scattered: *Ray) bool {
         attenuation.* = color(1.0, 1.0, 1.0);
-        const refraction_ratio = if (rec.front_face) (1.0 / self.ir) else self.ir;
+        const ri = if (rec.front_face) (1.0 / self.ir) else self.ir;
+
         const unit_direction = r_in.direction.unitVector();
-        const refracted = Vec3.refract(unit_direction, rec.normal, refraction_ratio);
-        scattered.* = ray(rec.p, refracted);
+        const cos_theta = fmin(unit_direction.negative().dot(rec.normal), 1.0);
+        const sin_theta = math.sqrt(1.0 - cos_theta * cos_theta);
+
+        const cannot_refract = ri * sin_theta > 1.0;
+        var direction: Vec3 = undefined;
+
+        if (cannot_refract or reflectance(cos_theta, ri) > randomDouble()) {
+            direction = Vec3.reflect(unit_direction, rec.normal);
+        } else {
+            direction = Vec3.refract(unit_direction, rec.normal, ri);
+        }
+
+        scattered.* = ray(rec.p, direction);
         return true;
     }
 };

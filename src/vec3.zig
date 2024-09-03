@@ -4,6 +4,8 @@ const testing = std.testing;
 
 const randomDouble = @import("rtweekend.zig").randomDouble;
 const randomDoubleRange = @import("rtweekend.zig").randomDoubleRange;
+const fmin = @import("rtweekend.zig").fmin;
+const fabs = @import("rtweekend.zig").fabs;
 
 pub const Vec3 = struct {
     e: [3]f64,
@@ -167,14 +169,6 @@ pub fn printVec(vec: Vec3) !void {
 }
 
 pub const vec3 = Vec3.init;
-
-fn fmin(a: f64, b: f64) f64 {
-    return if (a < b) a else b;
-}
-
-fn fabs(n: f64) f64 {
-    return if (n < 0.0) -n else n;
-}
 
 const epsilon: f32 = 0.00001;
 test "Vec3.index" {
