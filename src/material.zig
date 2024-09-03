@@ -2,11 +2,13 @@ const Ray = @import("ray.zig").Ray;
 const ray = @import("ray.zig").ray;
 const HitRecord = @import("hittable.zig").HitRecord;
 const Color = @import("color.zig").Color;
+const color = @import("color.zig").color;
 const Vec3 = @import("vec3.zig").Vec3;
 
 pub const Material = union(enum) {
     lambertian: Lambertian,
     metal: Metal,
+    dielectric: Dielectric,
 
     const Self = @This();
 
@@ -57,5 +59,26 @@ pub const Metal = struct {
         scattered.* = ray(rec.p, reflected.add(Vec3.randomUnitVector().multiplyNum(self.fuzz)));
         attenuation.* = self.albedo;
         return scattered.direction.dot(rec.normal) > 0;
+    }
+};
+
+pub const Dielectric = struct {
+    ir: f64,
+
+    const Self = @This();
+
+    pub fn init(index_of_refrection: f64) Self {
+        return .{
+            .ir = index_of_refrection,
+        };
+    }
+
+    pub fn scatter(self: Self, r_in: Ray, rec: HitRecord, attenuation: *Color, scattered: *Ray) bool {
+        attenuation.* = color(1.0, 1.0, 1.0);
+        const refraction_ratio = if (rec.front_face) (1.0 / self.ir) else self.ir;
+        const unit_direction = r_in.direction.unitVector();
+        const refracted = Vec3.refract(unit_direction, rec.normal, refraction_ratio);
+        scattered.* = ray(rec.p, refracted);
+        return true;
     }
 };

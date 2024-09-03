@@ -146,6 +146,13 @@ pub const Vec3 = struct {
         return v.sub(n.multiplyNum(v.dot(n) * 2));
     }
 
+    pub fn refract(uv: Vec3, n: Vec3, etai_over_etat: f64) Vec3 {
+        const cos_theta = fmin(uv.negative().dot(n), 1.0);
+        const r_out_perp = uv.add(n.multiplyNum(cos_theta)).multiplyNum(etai_over_etat);
+        const r_out_parallel = n.multiplyNum(-math.sqrt(fabs(1.0 - r_out_perp.lengthSquared())));
+        return r_out_perp.add(r_out_parallel);
+    }
+
     pub fn nearZero(self: Self) bool {
         const s = 1e-8;
         return math.approxEqAbs(f64, self.e[0], 0, s) and
@@ -160,6 +167,14 @@ pub fn printVec(vec: Vec3) !void {
 }
 
 pub const vec3 = Vec3.init;
+
+fn fmin(a: f64, b: f64) f64 {
+    return if (a < b) a else b;
+}
+
+fn fabs(n: f64) f64 {
+    return if (n < 0.0) -n else n;
+}
 
 const epsilon: f32 = 0.00001;
 test "Vec3.index" {
