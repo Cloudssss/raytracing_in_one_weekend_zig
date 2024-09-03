@@ -31,38 +31,75 @@ const Dielectric = @import("material.zig").Dielectric;
 const infinity = @import("rtweekend.zig").infinity;
 const pi = @import("rtweekend.zig").pi;
 
+const randomDouble = @import("rtweekend.zig").randomDouble;
+const randomDoubleRange = @import("rtweekend.zig").randomDoubleRange;
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
     var world = HittableList.init(allocator);
 
-    const material_ground = Material{ .lambertian = Lambertian.init(color(0.8, 0.8, 0.0)) };
-    const material_center = Material{ .lambertian = Lambertian.init(color(0.1, 0.2, 0.5)) };
-    const material_left = Material{ .dielectric = Dielectric.init(1.5) };
-    const material_bubble = Material{ .dielectric = Dielectric.init(1.0 / 1.5) };
-    const material_right = Material{ .metal = Metal.init(color(0.8, 0.6, 0.2), 1.0) };
+    var arena = std.heap.ArenaAllocator.init(allocator);
+    defer arena.deinit();
+    const arena_allocator = arena.allocator();
 
-    try world.add(.{ .sphere = sphere(point3(0, -100.5, -1), 100, &material_ground) });
-    try world.add(.{ .sphere = sphere(point3(0, 0, -1.2), 0.5, &material_center) });
-    try world.add(.{ .sphere = sphere(point3(-1, 0, -1), 0.5, &material_left) });
-    try world.add(.{ .sphere = sphere(point3(-1.0, 0.0, -1.0), 0.4, &material_bubble) });
-    try world.add(.{ .sphere = sphere(point3(1, 0, -1), 0.5, &material_right) });
+    const ground_material = try arena_allocator.create(Material);
+    ground_material.* = .{ .lambertian = Lambertian.init(color(0.5, 0.5, 0.5)) };
+    try world.add(.{ .sphere = sphere(point3(0, -100.5, -1), 100, ground_material) });
     defer world.deinit();
+
+    var a: i32 = -11;
+    var b: i32 = -11;
+    while (a < 11) : (a += 1) {
+        while (b < 11) : (b += 1) {
+            const choose_mat = randomDouble();
+            const center = point3(@as(f64, @floatFromInt(a)) + 0.9 * randomDouble(), 0.2, @as(f64, @floatFromInt(b)) + 0.9 * randomDouble());
+
+            if (center.sub(point3(4, 0.2, 0)).length() > 0.9) {
+                const sphere_material = try arena_allocator.create(Material);
+                if (choose_mat < 0.8) {
+                    const albedo = Color.random().multiply(Color.random());
+                    sphere_material.* = .{ .lambertian = Lambertian.init(albedo) };
+                    try world.add(.{ .sphere = sphere(center, 0.2, sphere_material) });
+                } else if (choose_mat < 0.95) {
+                    const albedo = Color.randomRange(0.5, 1);
+                    const fuzz = randomDoubleRange(0, 0.5);
+                    sphere_material.* = .{ .metal = Metal.init(albedo, fuzz) };
+                    try world.add(.{ .sphere = sphere(center, 0.2, sphere_material) });
+                } else {
+                    sphere_material.* = .{ .dielectric = Dielectric.init(1.5) };
+                    try world.add(.{ .sphere = sphere(center, 0.2, sphere_material) });
+                }
+            }
+        }
+    }
+
+    const material1 = try arena_allocator.create(Material);
+    material1.* = .{ .dielectric = Dielectric.init(1.5) };
+    try world.add(.{ .sphere = sphere(point3(0, 1, 0), 0.2, material1) });
+
+    const material2 = try arena_allocator.create(Material);
+    material2.* = .{ .lambertian = Lambertian.init(color(0.4, 0.2, 0.1)) };
+    try world.add(.{ .sphere = sphere(point3(-4, 1, 0), 0.2, material2) });
+
+    const material3 = try arena_allocator.create(Material);
+    material3.* = .{ .metal = Metal.init(color(0.7, 0.6, 0.5), 0.0) };
+    try world.add(.{ .sphere = sphere(point3(4, 1, 0), 0.2, material3) });
 
     var cam = Camera.init();
 
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 400;
-    cam.samples_per_pixel = 100;
+    cam.image_width = 1200;
+    cam.samples_per_pixel = 500;
     cam.max_depth = 50;
 
     cam.vfov = 20;
-    cam.lookfrom = point3(-2, 2, 1);
-    cam.lookat = point3(0, 0, -1);
+    cam.lookfrom = point3(13, 2, 3);
+    cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
 
-    cam.defocus_angle = 10.0;
-    cam.focus_dist = 3.4;
+    cam.defocus_angle = 0.6;
+    cam.focus_dist = 10.0;
 
     try cam.render(world);
 }
