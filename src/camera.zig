@@ -15,18 +15,26 @@ const Interval = @import("interval.zig").Interval;
 const interval = @import("interval.zig").interval;
 const infinity = @import("rtweekend.zig").infinity;
 const randomDouble = @import("rtweekend.zig").randomDouble;
+const degreesToRadians = @import("rtweekend.zig").degreesToRadians;
 
 pub const Camera = struct {
     aspect_ratio: f64 = 1.0,
     image_width: u32 = 100,
     samples_per_pixel: u32 = 10,
     max_depth: u32 = 10,
+    vfov: f64 = 90,
+    lookfrom: Point3 = point3(0, 0, 0),
+    lookat: Point3 = point3(0, 0, -1),
+    vup: Vec3 = vec3(0, 1, 0),
 
     image_height: u32,
     center: Point3,
     pixel00_loc: Point3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
+    u: Vec3,
+    v: Vec3,
+    w: Vec3,
 
     const Self = @This();
 
@@ -64,18 +72,28 @@ pub const Camera = struct {
         self.image_height = @intFromFloat(@as(f64, @floatFromInt(self.image_width)) / self.aspect_ratio);
         self.image_height = if (self.image_height < 1) 1 else self.image_height;
 
-        self.center = point3(0, 0, 0);
+        self.center = self.lookfrom;
 
-        const focal_length = 1.0;
-        const viewport_height = 2.0;
+        const focal_length = self.lookfrom.sub(self.lookat).length();
+        const theta = degreesToRadians(self.vfov);
+        const h = std.math.tan(theta / 2);
+        const viewport_height = 2.0 * h * focal_length;
         const viewport_width = viewport_height * (@as(f64, @floatFromInt(self.image_width)) / @as(f64, @floatFromInt(self.image_height)));
 
-        const viewport_u = vec3(viewport_width, 0, 0);
-        const viewport_v = vec3(0, -viewport_height, 0);
+        self.w = self.lookfrom.sub(self.lookat).unitVector();
+        self.u = self.vup.cross(self.w).unitVector();
+        self.v = self.w.cross(self.u);
+
+        const viewport_u = self.u.multiplyNum(viewport_width);
+        const viewport_v = self.v.negative().multiplyNum(viewport_height);
+
         self.pixel_delta_u = viewport_u.dividedByNum(@floatFromInt(self.image_width));
         self.pixel_delta_v = viewport_v.dividedByNum(@floatFromInt(self.image_height));
 
-        const viewport_upper_left = self.center.sub(vec3(0, 0, focal_length)).sub(viewport_u.dividedByNum(2)).sub(viewport_v.dividedByNum(2));
+        const viewport_upper_left = self.center
+            .sub(self.w.multiplyNum(focal_length))
+            .sub(viewport_u.dividedByNum(2))
+            .sub(viewport_v.dividedByNum(2));
         self.pixel00_loc = viewport_upper_left.add(self.pixel_delta_u.add(self.pixel_delta_v).multiplyNum(0.5));
     }
 
