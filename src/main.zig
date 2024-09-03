@@ -45,12 +45,12 @@ pub fn main() !void {
 
     const ground_material = try arena_allocator.create(Material);
     ground_material.* = .{ .lambertian = Lambertian.init(color(0.5, 0.5, 0.5)) };
-    try world.add(.{ .sphere = sphere(point3(0, -100.5, -1), 100, ground_material) });
+    try world.add(.{ .sphere = sphere(point3(0, -1000, 0), 1000, ground_material) });
     defer world.deinit();
 
     var a: i32 = -11;
-    var b: i32 = -11;
     while (a < 11) : (a += 1) {
+        var b: i32 = -11;
         while (b < 11) : (b += 1) {
             const choose_mat = randomDouble();
             const center = point3(@as(f64, @floatFromInt(a)) + 0.9 * randomDouble(), 0.2, @as(f64, @floatFromInt(b)) + 0.9 * randomDouble());
@@ -76,15 +76,15 @@ pub fn main() !void {
 
     const material1 = try arena_allocator.create(Material);
     material1.* = .{ .dielectric = Dielectric.init(1.5) };
-    try world.add(.{ .sphere = sphere(point3(0, 1, 0), 0.2, material1) });
+    try world.add(.{ .sphere = sphere(point3(0, 1, 0), 1.0, material1) });
 
     const material2 = try arena_allocator.create(Material);
     material2.* = .{ .lambertian = Lambertian.init(color(0.4, 0.2, 0.1)) };
-    try world.add(.{ .sphere = sphere(point3(-4, 1, 0), 0.2, material2) });
+    try world.add(.{ .sphere = sphere(point3(-4, 1, 0), 1.0, material2) });
 
     const material3 = try arena_allocator.create(Material);
     material3.* = .{ .metal = Metal.init(color(0.7, 0.6, 0.5), 0.0) };
-    try world.add(.{ .sphere = sphere(point3(4, 1, 0), 0.2, material3) });
+    try world.add(.{ .sphere = sphere(point3(4, 1, 0), 1.0, material3) });
 
     var cam = Camera.init();
 
