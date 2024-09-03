@@ -61,5 +61,8 @@ pub fn main() !void {
     cam.lookat = point3(0, 0, -1);
     cam.vup = vec3(0, 1, 0);
 
+    cam.defocus_angle = 10.0;
+    cam.focus_dist = 3.4;
+
     try cam.render(world);
 }

@@ -22,10 +22,14 @@ pub const Camera = struct {
     image_width: u32 = 100,
     samples_per_pixel: u32 = 10,
     max_depth: u32 = 10,
+
     vfov: f64 = 90,
     lookfrom: Point3 = point3(0, 0, 0),
     lookat: Point3 = point3(0, 0, -1),
     vup: Vec3 = vec3(0, 1, 0),
+
+    defocus_angle: f64 = 0,
+    focus_dist: f64 = 10,
 
     image_height: u32,
     center: Point3,
@@ -35,6 +39,8 @@ pub const Camera = struct {
     u: Vec3,
     v: Vec3,
     w: Vec3,
+    defocus_disk_u: Vec3,
+    defocus_disk_v: Vec3,
 
     const Self = @This();
 
@@ -74,10 +80,9 @@ pub const Camera = struct {
 
         self.center = self.lookfrom;
 
-        const focal_length = self.lookfrom.sub(self.lookat).length();
         const theta = degreesToRadians(self.vfov);
         const h = std.math.tan(theta / 2);
-        const viewport_height = 2.0 * h * focal_length;
+        const viewport_height = 2.0 * h * self.focus_dist;
         const viewport_width = viewport_height * (@as(f64, @floatFromInt(self.image_width)) / @as(f64, @floatFromInt(self.image_height)));
 
         self.w = self.lookfrom.sub(self.lookat).unitVector();
@@ -91,10 +96,14 @@ pub const Camera = struct {
         self.pixel_delta_v = viewport_v.dividedByNum(@floatFromInt(self.image_height));
 
         const viewport_upper_left = self.center
-            .sub(self.w.multiplyNum(focal_length))
+            .sub(self.w.multiplyNum(self.focus_dist))
             .sub(viewport_u.dividedByNum(2))
             .sub(viewport_v.dividedByNum(2));
         self.pixel00_loc = viewport_upper_left.add(self.pixel_delta_u.add(self.pixel_delta_v).multiplyNum(0.5));
+
+        const defocus_radius = self.focus_dist * std.math.tan(degreesToRadians(self.defocus_angle / 2));
+        self.defocus_disk_u = self.u.multiplyNum(defocus_radius);
+        self.defocus_disk_v = self.v.multiplyNum(defocus_radius);
     }
 
     fn getRay(self: Self, i: u32, j: u32) Ray {
@@ -103,8 +112,8 @@ pub const Camera = struct {
         const pixel_center = self.pixel00_loc.add(self.pixel_delta_u.multiplyNum(i_f)).add(self.pixel_delta_v.multiplyNum(j_f));
         const pixel_sample = pixel_center.add(self.pixelSampleSquare());
 
-        const ray_origin = self.center;
-        const ray_direction = pixel_sample.sub(self.center);
+        const ray_origin = if (self.defocus_angle <= 0) self.center else self.defocusDiskSample();
+        const ray_direction = pixel_sample.sub(ray_origin);
 
         return ray(ray_origin, ray_direction);
     }
@@ -113,6 +122,11 @@ pub const Camera = struct {
         const px = -0.5 + randomDouble();
         const py = -0.5 + randomDouble();
         return self.pixel_delta_u.multiplyNum(px).add(self.pixel_delta_v.multiplyNum(py));
+    }
+
+    fn defocusDiskSample(self: Self) Point3 {
+        const p = Vec3.randomInUnitDisk();
+        return self.center.add(self.defocus_disk_u.multiplyNum(p.x())).add(self.defocus_disk_v.multiplyNum(p.y()));
     }
 
     fn rayColor(self: Self, r: Ray, depth: u32, world: HittableList) Color {

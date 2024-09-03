@@ -135,6 +135,14 @@ pub const Vec3 = struct {
         return unitVector(randomInUnitSphere());
     }
 
+    pub fn randomInUnitDisk() Vec3 {
+        while (true) {
+            const p = vec3(randomDoubleRange(-1, 1), randomDoubleRange(-1, 1), 0);
+            if (p.lengthSquared() < 1)
+                return p;
+        }
+    }
+
     pub fn randomOnHemisphere(normal: Vec3) Vec3 {
         const on_unit_sphere = randomUnitVector();
         if (on_unit_sphere.dot(normal) > 0.0) {
